@@ -8,7 +8,8 @@ NOTE: The project is in unfinished state and you WILL encounter bugs.
 # Usage
 0. Replace your current steam iw4mp.exe with 208 one.
 
-1. Compile solution (MW2-208Project.sln)
+1. Compile solution (MW2-208Project.sln) 
+1. Or use binaries from (Precompiled-Binaries)
 
 2. Start the loader (208Project-Loader.exe)
 
