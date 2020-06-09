@@ -9,6 +9,7 @@ public:
 	static DWORD GetModuleSize(char*);
 	static DWORD GetCurrentModule();
 	static DWORD GetCurrentModuleEnd();
+	static int UnprotectPE( );
 
 	static DWORD FindPattern(char* pattern);
 
