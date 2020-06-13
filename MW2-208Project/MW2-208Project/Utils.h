@@ -9,7 +9,6 @@ public:
 	static DWORD GetModuleSize(char*);
 	static DWORD GetCurrentModule();
 	static DWORD GetCurrentModuleEnd();
-	static int UnprotectPE( );
 
 	static DWORD FindPattern(char* pattern);
 
@@ -28,6 +27,8 @@ public:
 	static void NOPAddy(DWORD_PTR Address, size_t length);
 
 	static bool ValidAddy(DWORD_PTR Address);
+
+	static void BypassVacBan( );
 
 	static void Init(HMODULE thisModule);
 };

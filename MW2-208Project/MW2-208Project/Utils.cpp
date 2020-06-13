@@ -105,49 +105,20 @@ bool Utils::ValidAddy(DWORD_PTR Addy)
 	return (Addy > modBase && Addy < modSiz) || (Addy > curDLL && Addy < curSiz);
 }
 
-int Utils::UnprotectPE()
+void Utils::BypassVacBan()
 {
-
-	// unprotect the entire PE
-	HMODULE hModule = GetModuleHandle( nullptr );
-
-	if ( !hModule ) {
-
-		return ERROR_MOD_NOT_FOUND;
-	}
-
-	const auto header = reinterpret_cast< PIMAGE_DOS_HEADER >( hModule );
-
-	const auto ntHeader = reinterpret_cast< PIMAGE_NT_HEADERS >( reinterpret_cast< uintptr_t >( hModule ) + header->e_lfanew );
-
-	const SIZE_T size = ntHeader->OptionalHeader.SizeOfImage;
-
-	DWORD oProtect;
-
-	VirtualProtect( static_cast< LPVOID >( hModule ), size, PAGE_EXECUTE_READWRITE, &oProtect );
-
-	return ERROR_SUCCESS;
+	// bypass callback from IWSteamClient::OnLobbyCreated
+	PatchAddy<BYTE>( 0x4DBFFD, 0x74 );
+	// bypass callback from IWSteamClient::JoinLobby
+	PatchAddy<BYTE>( 0x4D3340, 0x75 );
+	// steam check that is called each frame
+	Utils::NOPAddy( 0x49D99F, 5 );
 }
+
 
 void Utils::Init(HMODULE thisModule)
 {
-	//credits to https://github.com/CamxxCore/PatchIWNet
-	if (UnprotectPE() != ERROR_SUCCESS)
-		return;
-
-	// currentnetcode (test)
-	*( DWORD* ) 0x4F3021 = 148;
-
-	// bypass callback from IWSteamClient::OnLobbyCreated
-	*( BYTE* ) 0x4DBFFD = 0x74;
-
-	// bypass callback from IWSteamClient::JoinLobby
-	*( BYTE* ) 0x4D3340 = 0x75;
-
-	// steam check that is called each frame
-	Utils::NOPAddy( 0x49D99F, 5 );
-
-	*( int32_t* ) 0x4D8A8B = 0x79122C;
+	BypassVacBan(); // call it here for now I guess.
 
 	curDLL = (DWORD)thisModule;
 	MODULEINFO miModInfoo; GetModuleInformation(GetCurrentProcess(), (HMODULE)curDLL, &miModInfoo, sizeof(MODULEINFO));
