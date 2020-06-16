@@ -115,11 +115,20 @@ void Utils::BypassVacBan()
 	Utils::NOPAddy( 0x49D99F, 5 );
 }
 
+void Utils::RemoveVacBanBypass()
+{
+	// remove bypass callback from IWSteamClient::OnLobbyCreated
+	PatchAddy<BYTE>(0x4DBFFD, 0x75);
+	// remove bypass callback from IWSteamClient::JoinLobby
+	PatchAddy<BYTE>(0x4D3340, 0x74);
+	// remove steam check that is called each frame
+	byte buffer[] = { 0xE8, 0xBC, 0x5F, 0x1E, 0x00 };
+	Utils::PatchAddy(0x49D99F, buffer, 5);
+}
+
 
 void Utils::Init(HMODULE thisModule)
 {
-	BypassVacBan(); // call it here for now I guess.
-
 	curDLL = (DWORD)thisModule;
 	MODULEINFO miModInfoo; GetModuleInformation(GetCurrentProcess(), (HMODULE)curDLL, &miModInfoo, sizeof(MODULEINFO));
 	curSiz = curDLL + miModInfoo.SizeOfImage;

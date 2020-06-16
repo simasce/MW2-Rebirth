@@ -121,6 +121,31 @@ void hk_AddCmdDrawText(const char *text, int maxChars, void *Font_s, float x, fl
 	return oAddCmdDrawText(text, maxChars, Font_s, x, y, xScale, yScale, rotation, color, style);
 }
 
+/*typedef bool(__cdecl *tSteam_IsInValidLobby)(int, int);
+tSteam_IsInValidLobby oIsInValidLobby;
+
+bool hk_Steam_IsInValidLobby(int unk, int unk1) 
+{
+	if (Dvars->rebirth_bypassvac->current.enabled)
+		return true;
+
+	return oIsInValidLobby(unk, unk1);
+}
+
+using tPartyHost_Frame = int(__cdecl*)(PartyData_s*, int, int);
+tPartyHost_Frame oPartyHostFrame;
+
+int PartyHost_Frame_Hook(PartyData_s * party, const int localControllerIndex, const int localClientNum) {
+
+	PartyData_t * g_lobbyData = (PartyData_t*)0x1088E50, *g_partyData = (PartyData_t*)0x1085688;
+	IWSteamClient * g_steamClient = *(IWSteamClient**)0x672A90C;
+
+	//if (Dvars->rebirth_bypassvac->current.enabled)
+		//g_lobbyData->steamID = g_partyData->steamID = g_steamClient->steamID = g_steamClient->steamID_1 = qwSteamID;
+
+	return oPartyHostFrame(party, localControllerIndex, localClientNum);
+}*/
+
 
 bool Hook208()
 {
@@ -159,6 +184,7 @@ bool Hook208()
 	Utils::PatchAddy(0x434FD6, steamAuthSize, 4);
 
 	oAddCmdDrawText = (tAddCmdDrawText)DetourFunction((PBYTE)0x50AC40, (PBYTE)hk_AddCmdDrawText);
+	//oIsInValidLobby = (tSteam_IsInValidLobby)DetourFunction((PBYTE)0x471DE0, (PBYTE)hk_Steam_IsInValidLobby);
 
 	MSGHooks::Hook();
 	RCEFixes::Init();

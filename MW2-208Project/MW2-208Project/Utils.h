@@ -29,6 +29,7 @@ public:
 	static bool ValidAddy(DWORD_PTR Address);
 
 	static void BypassVacBan( );
+	static void RemoveVacBanBypass();
 
 	static void Init(HMODULE thisModule);
 };

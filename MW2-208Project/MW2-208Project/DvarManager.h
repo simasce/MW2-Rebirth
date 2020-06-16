@@ -14,7 +14,7 @@ private:
 	dvar_t* vid_xpos = nullptr;
 	dvar_t* vid_ypos = nullptr;	
 	dvar_t* cl_ingame = nullptr;
-
+	
 	void init();
 public:
 	DvarManager();
@@ -28,6 +28,7 @@ public:
 	dvar_t* rebirth_mod = nullptr;
 	dvar_t* rebirth_openNat = nullptr;
 	dvar_t* rebirth_bounce = nullptr;
+	dvar_t* rebirth_bypassvac = nullptr;
 };
 
 extern DvarManager* Dvars;

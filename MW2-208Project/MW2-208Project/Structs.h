@@ -248,3 +248,30 @@ struct PartyData_s {
 	PartyData_s* partyToNotify; //0x23D4
 	char pad_0x23D8[0x420]; //0x23D8
 };
+
+struct IWSteamClient 
+{
+	char pad0[0x90];
+	unsigned long long steamID;
+	unsigned long long steamID_1;
+};
+
+struct PartyData_t 
+{
+	const char* type; //0x0-0x4
+	int unk; //0x4-0x8
+	bool bMigrationEnabled; //0x8-0x9
+	bool unk1; //0x9-0xA
+	char pad0[0x17D4]; //0xA-0X17FC
+	bool bHostMigrate;
+	//char pad1[0xE];
+	//int iwSteamState; //0x17FC-0x17DE
+	char pad1[0x9]; //0x17DE-0x17E7
+	unsigned long long steamID; //0x17E8-0x17F0
+	char pad2[0x58]; //0x17F0-0x1848
+	int partyID; //0x1848-0x184C
+	char pad3[0x4]; //0x184C-0x1850
+	int mappack_flags; //0x1850-0x1854
+	char pad4[0x18]; //0x1854-0x185C
+	PartyData_t * partyToNotify; //0x186C-0x1870
+};

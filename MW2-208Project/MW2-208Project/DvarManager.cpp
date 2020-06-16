@@ -2,6 +2,9 @@
 
 void DvarManager::init()
 {
+	if (!rebirth_bypassvac)
+		rebirth_bypassvac = Engine->Dvar_RegisterBool("rebirth_bypassvac", 0, 0, "Enables VAC bypass.");
+
 	if (!rebirth_mod)
 		rebirth_mod = Engine->Dvar_RegisterString("rebirth_mod", (char*)0x6DECEA, 0, "Sets the mod. Empty string disables mod load.");
 
@@ -89,6 +92,17 @@ void DvarManager::update()
 			Utils::PatchAddy<byte>(0x4F4AD3, 0x14);
 		}
 		oldBounce = rebirth_bounce->current.enabled;
+	}
+
+	static bool oldVac = rebirth_bypassvac->current.enabled;
+
+	if (oldVac != rebirth_bypassvac->current.enabled)
+	{
+		oldVac = rebirth_bypassvac->current.enabled;
+		if (oldVac)
+			Utils::BypassVacBan();
+		else
+			Utils::RemoveVacBanBypass();
 	}
 }
 
