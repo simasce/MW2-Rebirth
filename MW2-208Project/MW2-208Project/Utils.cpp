@@ -105,8 +105,21 @@ bool Utils::ValidAddy(DWORD_PTR Addy)
 	return (Addy > modBase && Addy < modSiz) || (Addy > curDLL && Addy < curSiz);
 }
 
+void Utils::BypassVacBan()
+{
+	// bypass callback from IWSteamClient::OnLobbyCreated
+	PatchAddy<BYTE>( 0x4DBFFD, 0x74 );
+	// bypass callback from IWSteamClient::JoinLobby
+	PatchAddy<BYTE>( 0x4D3340, 0x75 );
+	// steam check that is called each frame
+	Utils::NOPAddy( 0x49D99F, 5 );
+}
+
+
 void Utils::Init(HMODULE thisModule)
 {
+	BypassVacBan(); // call it here for now I guess.
+
 	curDLL = (DWORD)thisModule;
 	MODULEINFO miModInfoo; GetModuleInformation(GetCurrentProcess(), (HMODULE)curDLL, &miModInfoo, sizeof(MODULEINFO));
 	curSiz = curDLL + miModInfoo.SizeOfImage;
