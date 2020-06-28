@@ -132,11 +132,36 @@ struct a11Param //to force default 0
 };
 
 std::map<DWORD, a11Param> a11Map;
+std::vector<DWORD> a11Extras = 
+{
+	0x60F6F6,
+	0x60F867,
+	0x60F9ED,
+	0x60FB63,
+	0x60FC24,
+	0x60FD09,
+	0x60FD39,
+	0x60FE39,
+	0x60FE44,
+	0x60FE4F,
+	0x60FF5E,
+	0x6100F4,
+	0x610145,
+	0x4153D4,
+	0x4153E9,
+	0x4153FE,
+	0x415413,
+	0x4157D7
+};
 
 DWORD GetA11(DWORD retAddy, msg_t* curMsg)
 {
 	if (MSGMap[curMsg->data].a11 != 0xFF)
 		return MSGMap[curMsg->data].a11;
+
+	auto &a = std::find(a11Extras.begin(), a11Extras.end(), retAddy);
+	if(a != a11Extras.end())
+		return curMsg->data == 0 ? 0 : 4;
 
 	return a11Map[retAddy].a11;
 }
@@ -158,7 +183,8 @@ void LoadA11()
 	a11Map[0x4B70FE] = 0x9;
 	a11Map[0x4B712B] = 0x9;
 	a11Map[0x4B7186] = 0x9;
-	//a11Map[0x4B7E02] = 0xb;
+
+	a11Map[0x4B7E02] = 0xb; //test fix -- was commented out
 	
 	//208 serverside and leftover clientside 
 	a11Map[0x5DFD63] = 0x4;
@@ -524,6 +550,29 @@ char __cdecl hk_MSG_WriteString(msg_t* a11, char *Source)
 	return v4;
 }
 
+int getMagicScramble()
+{
+	DWORD msBackup = *(DWORD*)0x6320D04;
+	_asm
+	{
+		pushad;
+
+		mov ecx, msBackup;
+		mov eax, 0x51EB851F;
+		imul ecx;
+		sar edx, 4;
+		mov eax, edx;
+		shr eax, 0x1F;
+		add eax, edx;
+		push eax;
+		call Scr_GetScrambleBuf;
+		add esp, 4;
+		mov msBackup, eax;
+		popad;
+	}
+	return msBackup;
+}
+
 DWORD *oldLongClient=0;
 int __cdecl hk_MSG_WriteLong(msg_t* a11, int a2)
 {
@@ -566,7 +615,8 @@ int __cdecl hk_MSG_WriteLong(msg_t* a11, int a2)
 		MSGMap[a11->data].a10 = (DWORD)Scr_GetScrambleBuf(a2);
 		break;
 	case 0x42F0E6:
-		MSGMap[a11->data].a10 = (DWORD)Scr_GetScrambleBuf((*(DWORD*)0x6320D04) / 50);
+		//MSGMap[a11->data].a10 = (DWORD)Scr_GetScrambleBuf((*(DWORD*)0x6320D04) / 50);
+		MSGMap[a11->data].a10 = getMagicScramble();
 		break;
 	case 0x41825F:
 		MSGMap[a11->data].a10 = (DWORD)Scr_GetScrambleBuf(a2);
@@ -580,6 +630,7 @@ int __cdecl hk_MSG_WriteLong(msg_t* a11, int a2)
 		break;
 	case 0x46AA9A:
 		MSGMap[a11->data].a10 = (DWORD)Scr_GetScrambleBuf(a2);
+		MSGMap[a11->data].a11 = a11->cursize; //test fix
 		break;
 	case 0x452D33:
 		MSGMap[a11->data].a10 = (DWORD)Scr_GetScrambleBuf(a2);
@@ -1046,15 +1097,45 @@ __declspec(naked) void CL_ParseGameState_MHk()
 
 
 DWORD CL_ParseSnapshot_Ret = 0;
-DWORD CSP_V1 = 0;
+int CSP_V1 = 0;
 msg_t* CSP_MSG = 0;
+
 __declspec(naked) void CL_ParseSnapShot_MHk()
 {
-	_asm mov CSP_V1, eax;
+	//_asm mov CSP_V1, eax; old
 	_asm mov CSP_MSG, edi;
+	//additional fix
+	_asm
+	{
+		push ecx;
+		push edx;
+
+		mov ecx, eax;
+		mov eax, 0x51EB851F;
+		imul ecx;
+
+		mov CSP_V1, ecx; // backup for [esi+3124h]
+		//mov[esi+3124h], ecx will be done on return anyways
+		sar edx, 4;
+		mov ecx, edx;
+		shr ecx, 0x1F;
+		add ecx, edx;
+
+		push ecx;
+		call Scr_GetScrambleBuf;
+		add esp, 4;
+		mov ecx, eax; //unscrambled buf backup
+		mov eax, CSP_V1; //get backup
+		mov CSP_V1, ecx; //set unscrambled buf
+
+		pop edx;
+		pop ecx;
+	}
+	
+	//end
 	_asm pushad;
 
-	MSGMap[CSP_MSG->data].a10 = (DWORD)Scr_GetScrambleBuf(CSP_V1 / 50);
+	MSGMap[CSP_MSG->data].a10 = CSP_V1;
 
 	_asm popad;
 	_asm jmp CL_ParseSnapshot_Ret;

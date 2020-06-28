@@ -1,5 +1,6 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "stdafx.h"
+#include <intrin.h>
 
 typedef void(__cdecl* tAddCmdDrawText)(const char *text, int maxChars, void *Font_s, float x, float y, float xScale, float yScale, float rotation, const void* color, int style);
 tAddCmdDrawText oAddCmdDrawText;
@@ -95,7 +96,6 @@ int SendExecuteCommand(std::string cmd)
 	return 0;
 }
 
-
 void GameLoop()
 {
 	if (!*ConsoleWindow)
@@ -182,6 +182,8 @@ bool Hook208()
 	Utils::PatchAddy(0x434EC0, steamAuthPatch, 3);
 	byte steamAuthSize[] = { 0x90, 0x67, 0x0A, 0x00 };
 	Utils::PatchAddy(0x434FD6, steamAuthSize, 4);
+
+	Utils::PatchAddy<byte>(0x5A812C, 0xC3); //temporary fix to silence "Ignoring disconnect packet..."
 
 	oAddCmdDrawText = (tAddCmdDrawText)DetourFunction((PBYTE)0x50AC40, (PBYTE)hk_AddCmdDrawText);
 	//oIsInValidLobby = (tSteam_IsInValidLobby)DetourFunction((PBYTE)0x471DE0, (PBYTE)hk_Steam_IsInValidLobby);
